@@ -1,1 +1,113 @@
 (* DFA (deterministic finite automaton) representing a regular expression *)
+
+type transition =
+  | Input of char
+  | End_of_input
+
+type state_id = int
+
+let alphabet =
+  End_of_input :: List.init 256 (fun i -> Input (char_of_int i))
+
+let nfa_trans_of_dfa_trans (trans : transition) : NFA.transition =
+  match trans with
+  | Input c -> Input c
+  | End_of_input -> End_of_input
+
+(* A set of NFA state IDs, identifying a DFA state *)
+module NFA_states = Set.Make (struct
+    type t = NFA.state
+    let compare (a : NFA.state) (b : NFA.state) = compare a.id b.id
+end)
+
+let hash_nfa_states (x : NFA_states.t) =
+  (* Get the elements as a sorted list before hashing them *)
+  Hashtbl.hash (NFA_states.elements x)
+
+let union_of_nfa_transitions nfa_states =
+  let tbl = Hashtbl.create 10 in
+  NFA_states.iter (fun (state : NFA.state) ->
+    Hashtbl.iter (fun trans dst_state ->
+      Hashtbl.add tbl trans dst_state
+    ) state.transitions
+  ) nfa_states;
+  tbl
+
+(* A DFA state. The original unique ID is a set of NFA state IDs.
+   The 'id' field is a unique int generated from a counter. *)
+type state = {
+  id: state_id;
+  nfa_states: NFA_states.t;
+  final: bool;
+  transitions: (transition, state) Hashtbl.t;
+}
+
+type t = state * state array
+
+(* A hash table module for mapping DFA state IDs to anything *)
+module NFA_states_tbl = Hashtbl.Make (struct
+  type t = NFA_states.t
+  let hash = hash_nfa_states
+  let equal = NFA_states.equal
+end)
+
+let epsilon_closure (state : NFA.state) : NFA_states.t =
+  (state :: Hashtbl.find_all state.transitions Epsilon)
+  |> NFA_states.of_list
+
+let merge_dst_nfa_states
+    (nfa_states_before_epsilon_closure : NFA.state list) =
+  List.fold_left (fun states state ->
+    NFA_states.union states (epsilon_closure state)
+  ) NFA_states.empty nfa_states_before_epsilon_closure
+
+let make (nfa_start : NFA.state) : t =
+  let state_counter = ref 0 in
+
+  let all_states = NFA_states_tbl.create 100 in
+
+  (* Get or create a DFA state from a set of NFA states *)
+  let get_dfa_state ?(final = false) nfa_states =
+    match NFA_states_tbl.find_opt all_states nfa_states with
+    | Some state -> state
+    | None ->
+        let id = !state_counter in
+        incr state_counter;
+        let state = {
+          id;
+          nfa_states;
+          final;
+          transitions = Hashtbl.create 10
+        } in
+        NFA_states_tbl.add all_states nfa_states state;
+        state
+  in
+
+  let rec translate_nfa_states (dfa_state : state) =
+    let nfa_transitions = union_of_nfa_transitions dfa_state.nfa_states in
+    (* Iterate over the alphabet *)
+    List.iter (fun possible_trans ->
+      let dst_nfa_states =
+        Hashtbl.find_all nfa_transitions (nfa_trans_of_dfa_trans possible_trans)
+        |> merge_dst_nfa_states
+      in
+      let dst_dfa = get_dfa_state dst_nfa_states in
+      if not (Hashtbl.mem dfa_state.transitions possible_trans) then (
+        Hashtbl.add dfa_state.transitions possible_trans dst_dfa;
+        translate_nfa_states dfa_state
+      )
+    ) alphabet
+  in
+
+  let nfa_starts = merge_dst_nfa_states [nfa_start] in
+  let dfa_start = get_dfa_state nfa_starts in
+  translate_nfa_states dfa_start;
+
+  let state_array =
+    NFA_states_tbl.fold (fun _id state acc -> state :: acc) all_states []
+    |> List.sort (fun a b -> compare a.id b.id)
+    |> Array.of_list
+  in
+  Array.iteri (fun i state -> assert (state.id = i)) state_array;
+
+  (dfa_start, state_array)
