@@ -1,10 +1,15 @@
 (* DFA (deterministic finite automaton) representing a regular expression *)
 
+open Printf
+
 type transition =
   | Input of char
   | End_of_input
 
 type state_id = int
+
+(* 42 -> "D42" to avoid confusion with NFA states named Nxxx *)
+let show_state_id id = sprintf "D%i" id
 
 let alphabet =
   End_of_input :: List.init 256 (fun i -> Input (char_of_int i))
@@ -44,6 +49,20 @@ type state = {
 
 type t = state * state array
 
+let show_nfa_states nfa_states =
+  NFA_states.elements nfa_states
+  |> List.map (fun (state : NFA.state) -> NFA.show_state_id state.id)
+  |> String.concat ", "
+  |> sprintf "{%s}"
+
+let show_state state =
+  sprintf "%s %s (%i transitions)%s"
+    (show_state_id state.id)
+    (show_nfa_states state.nfa_states)
+    (Hashtbl.length state.transitions)
+    (if state.final then " final"
+     else "")
+
 (* A hash table module for mapping DFA state IDs to anything *)
 module NFA_states_tbl = Hashtbl.Make (struct
   type t = NFA_states.t
@@ -64,15 +83,23 @@ let merge_dst_nfa_states
 let make (nfa_start : NFA.state) : t =
   let state_counter = ref 0 in
 
+  let new_id () =
+    let id = !state_counter in
+    incr state_counter;
+    id
+  in
+
   let all_states = NFA_states_tbl.create 100 in
 
   (* Get or create a DFA state from a set of NFA states *)
-  let get_dfa_state ?(final = false) nfa_states =
+  let get_dfa_state nfa_states =
     match NFA_states_tbl.find_opt all_states nfa_states with
     | Some state -> state
     | None ->
-        let id = !state_counter in
-        incr state_counter;
+        let id = new_id () in
+        let final =
+          NFA_states.exists
+            (fun (state : NFA.state) -> state.final) nfa_states in
         let state = {
           id;
           nfa_states;
@@ -84,6 +111,7 @@ let make (nfa_start : NFA.state) : t =
   in
 
   let rec translate_nfa_states (dfa_state : state) =
+    (* printf "translate %s\n" (show_state dfa_state); *)
     let nfa_transitions = union_of_nfa_transitions dfa_state.nfa_states in
     (* Iterate over the alphabet *)
     List.iter (fun possible_trans ->
@@ -91,11 +119,13 @@ let make (nfa_start : NFA.state) : t =
         Hashtbl.find_all nfa_transitions (nfa_trans_of_dfa_trans possible_trans)
         |> merge_dst_nfa_states
       in
-      let dst_dfa = get_dfa_state dst_nfa_states in
-      if not (Hashtbl.mem dfa_state.transitions possible_trans) then (
-        Hashtbl.add dfa_state.transitions possible_trans dst_dfa;
-        translate_nfa_states dfa_state
-      )
+      (* For now, avoid creating transitions to the dead state *)
+      if not (NFA_states.is_empty dst_nfa_states) then
+        let dst_dfa = get_dfa_state dst_nfa_states in
+        if not (Hashtbl.mem dfa_state.transitions possible_trans) then (
+          Hashtbl.add dfa_state.transitions possible_trans dst_dfa;
+          translate_nfa_states dst_dfa
+        )
     ) alphabet
   in
 

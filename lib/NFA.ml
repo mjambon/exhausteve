@@ -1,11 +1,16 @@
 (* NFA representing a regular expression *)
 
+open Printf
+
 type transition =
   | Epsilon
   | Input of char
   | End_of_input
 
 type state_id = int
+
+(* 42 -> "N42" to avoid confusion with DFA states named Dxxx *)
+let show_state_id x = sprintf "N%i" x
 
 (* A state in the automaton i.e. a node in a directed graph with labeled
    edges.

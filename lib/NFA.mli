@@ -7,6 +7,8 @@ type transition =
 
 type state_id = private int
 
+val show_state_id : state_id -> string
+
 (** A state in the automaton i.e. a node in a directed graph with labeled
     edges.
 

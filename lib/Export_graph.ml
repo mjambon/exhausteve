@@ -15,6 +15,25 @@ type transition = {
   label: string;
 }
 
+(* Escape control characters only, preserve newlines *)
+let escape_char c =
+  match c with
+  | '\\' -> {|\\|}
+  | '\"' -> {|\"|}
+  | '\n' -> {|\n|}
+  | '\000'..'\031' -> sprintf "\\\\x%02X" (Char.code c)
+  | c -> String.make 1 c
+
+(* Escape control characters only, preserve Greek letters and such.
+   Add quotes. *)
+let quote str =
+  str
+  |> String.to_seq
+  |> Seq.map escape_char
+  |> List.of_seq
+  |> String.concat ""
+  |> sprintf {|"%s"|}
+
 let export_dot oc states transitions =
   fprintf oc "digraph {\n";
   List.iter (fun state ->
@@ -24,35 +43,33 @@ let export_dot oc states transitions =
       else
         "circle"
     in
-    fprintf oc "  \"%s\" [shape=%s];\n"
-      state.id shape
+    fprintf oc "  %s [shape=%s];\n"
+      (quote state.id) shape
   ) states;
   List.iter (fun trans ->
-    fprintf oc "  \"%s\" -> \"%s\" [label=%S];\n"
-      trans.from trans.to_ trans.label
+    fprintf oc "  %s -> %s [label=%s];\n"
+      (quote trans.from) (quote trans.to_) (quote trans.label)
   ) transitions;
   fprintf oc "}\n"
 
 let label_of_nfa_transition (x : NFA.transition) =
   match x with
   | Epsilon -> "ε"
-  | Input c -> sprintf "%C" c
+  | Input c -> sprintf "'%c'" c
   | End_of_input -> "eof"
 
 let label_of_dfa_transition (x : DFA.transition) =
   match x with
-  | Input c -> sprintf "%C" c
+  | Input c -> sprintf "'%c'" c
   | End_of_input -> "eof"
 
-let nfa_name (state : NFA.state) = sprintf "N%i" (state.id :> int)
+let nfa_name (state : NFA.state) =
+  NFA.show_state_id state.id
 
 let dfa_name (state : DFA.state) =
-  let nfa_state_names =
-    DFA.NFA_states.elements state.nfa_states
-    |> List.map nfa_name
-    |> String.concat ", "
-  in
-  sprintf "D%i\\n{%s}" (state.id :> int) nfa_state_names
+  sprintf "%s\n%s"
+    (DFA.show_state_id state.id)
+    (DFA.show_nfa_states state.nfa_states)
 
 let export_nfa oc states =
   let nodes, nested_edges =
