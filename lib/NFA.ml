@@ -84,8 +84,12 @@ let make (re : Regexp.t) : t =
         translate_regexp cur_state a state;
         translate_regexp state b next_state
     | Alt (a, b) ->
-        translate_regexp cur_state a next_state;
-        translate_regexp cur_state b next_state
+        let state_a = create_state () in
+        add_transition cur_state Epsilon state_a;
+        translate_regexp state_a a next_state;
+        let state_b = create_state () in
+        add_transition cur_state Epsilon state_b;
+        translate_regexp state_b b next_state
     | Repeat a ->
         translate_regexp cur_state a cur_state;
         add_transition cur_state Epsilon next_state
