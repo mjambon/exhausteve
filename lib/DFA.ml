@@ -70,9 +70,18 @@ module NFA_states_tbl = Hashtbl.Make (struct
   let equal = NFA_states.equal
 end)
 
+(* Produce a set of all the states reachable via zero or more
+   epsilon transitions *)
 let epsilon_closure (state : NFA.state) : NFA_states.t =
-  (state :: Hashtbl.find_all state.transitions Epsilon)
-  |> NFA_states.of_list
+  let rec visit visited state =
+    if NFA_states.mem state visited then
+      visited
+    else
+      let visited = NFA_states.add state visited in
+      let dst_states = Hashtbl.find_all state.transitions Epsilon in
+      List.fold_left visit visited dst_states
+  in
+  visit NFA_states.empty state
 
 let merge_dst_nfa_states
     (nfa_states_before_epsilon_closure : NFA.state list) =
