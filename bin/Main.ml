@@ -10,6 +10,8 @@ open Exhausteve
 *)
 let main () =
   let re = In_channel.input_all stdin |> Regexp.of_string_exn in
-  print_endline (Regexp.show re)
+  print_endline (Regexp.show re);
+  let _nfa_entrypoint, nfa_states = NFA.make re in
+  Export_graph.export_nfa_to_file "nfa.dot" nfa_states
 
 let () = main ()

@@ -5,3 +5,5 @@ build:
 .PHONY: demo
 demo:
 	echo "a b* | c?" | ./exhausteve
+	dot -Tpng nfa.dot -o nfa.png
+	display nfa.png
