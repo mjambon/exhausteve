@@ -5,8 +5,13 @@ build:
 .PHONY: demo
 demo:
 	echo "a b* | c?" | ./exhausteve
+	$(MAKE) graphs
+
+# 'dot' is part of Graphviz.
+# 'display' is part of ImageMagick.
+.PHONY: graphs
+graphs:
 	dot -Tpng nfa.dot -o nfa.png
 	dot -Tpng dfa.dot -o dfa.png
-	display nfa.png
-	display dfa.png
-
+	display nfa.png &
+	display dfa.png &
