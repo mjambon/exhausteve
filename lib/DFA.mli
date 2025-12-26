@@ -6,7 +6,7 @@ type transition =
 
 type state_id = private int
 
-module NFA_states : Set.S
+module NFA_states : Set.S with type elt = NFA.state
 
 (** A DFA state. The original unique ID is a set of NFA state IDs.
     The [id] field is a unique int generated from a counter. *)
