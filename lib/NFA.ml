@@ -91,8 +91,10 @@ let make (re : Regexp.t) : t =
         add_transition cur_state Epsilon state_b;
         translate_regexp state_b b next_state
     | Repeat a ->
-        translate_regexp cur_state a cur_state;
-        add_transition cur_state Epsilon next_state
+        let state = create_state () in
+        add_transition cur_state Epsilon state;
+        translate_regexp state a state;
+        add_transition state Epsilon next_state
   in
   let initial_state = create_state () in
   let penultimate_state = create_state () in
