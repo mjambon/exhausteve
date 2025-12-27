@@ -8,6 +8,8 @@ type transition =
 
 type state_id = int
 
+let compare_state_id = Int.compare
+
 (* 42 -> "D42" to avoid confusion with NFA states named Nxxx *)
 let show_state_id id = sprintf "D%i" id
 
@@ -48,6 +50,9 @@ type state = {
 }
 
 type t = state * state array
+
+let compare_state a b =
+  compare_state_id a.id b.id
 
 let show_nfa_states nfa_states =
   NFA_states.elements nfa_states

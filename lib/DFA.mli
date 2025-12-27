@@ -23,6 +23,8 @@ type state = {
 
 val show_state : state -> string
 
+val compare_state : state -> state -> int
+
 type t = state * state array
 
 val make : NFA.state -> t

@@ -13,12 +13,16 @@
    a?  : Alt (Char 'a', Empty)
 v}
 *)
-type t = Regexp_type.t =
+type t =
   | Empty
   | Char of char
   | Seq of t * t
   | Alt of t * t
   | Repeat of t
-[@@deriving show]
+[@@deriving show { with_path = false }]
 
-val of_string_exn : string -> t
+(** Match one or more ("+" quantifier) *)
+val repeat1 : t -> t
+
+(** Match zero or one ("?" quantifier) *)
+val opt : t -> t

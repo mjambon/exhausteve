@@ -6,7 +6,7 @@
    See Lexer.mll for details on the syntax
 *)
 
-  open Regexp_type
+  open Regexp
 %}
 
 %token BAR LPAR RPAR STAR PLUS QUESTION EOF
@@ -16,7 +16,7 @@
 %right BAR
 
 %start main
-%type <Regexp_type.t> main
+%type <Regexp.t> main
 %%
 
 main:

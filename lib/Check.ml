@@ -1,5 +1,49 @@
 (* Analyze the DFA for exhaustiveness *)
 
+let compile re =
+  let nfa_start, _nfa_states = NFA.make re in
+  let dfa_start, _dfa_states = DFA.make nfa_start in
+  dfa_start
+
+module DFA_states = Set.Make (struct
+    type t = DFA.state
+    let compare = DFA.compare_state
+end)
+
+module DFA_state_map = Map.Make (struct
+    type t = DFA.state
+    let compare = DFA.compare_state
+end)
+
+let string_of_path (path : char list) =
+  path
+  |> List.rev
+  |> List.to_seq
+  |> String.of_seq
+
+exception Missing_transition of DFA.transition
+
+(* All possible transitions sorted so as to start with printable characters
+   because they're a little nicer to put into examples when we have a choice *)
+let transitions_sorted_by_order_of_importance =
+  DFA.End_of_input
+  :: List.init 256 (fun i -> DFA.Input (char_of_int ((i + 32) mod 256)))
+
+let find_missing_transition (state : DFA.state) =
+  if state.final then
+    None
+  else
+    let transitions = state.transitions in
+    try
+      List.iter (fun trans ->
+        if not (Hashtbl.mem transitions trans) then
+          raise (Missing_transition trans)
+      ) transitions_sorted_by_order_of_importance;
+      None
+    with Missing_transition trans -> Some trans
+
+exception Found_string of string
+
 (*
    The DFA represents a regular expression.
    In order to match any input, each state of the automaton must be either
@@ -9,10 +53,64 @@
    We try to provide nice examples by favoring shorter input strings.
    This is achieved by visiting the graph breadth-first instead of depth-first.
 *)
-let is_exhaustive_dfa (_state : DFA.state) =
-  Ok ()
+let is_exhaustive (start_state : DFA.state) =
+  let rec bfs_visit
+      visited
+      (paths : char list DFA_state_map.t) =
+    let visited, extended_paths =
+      DFA_state_map.fold (fun state path (visited, extended_paths) ->
+        let visited = DFA_states.add state visited in
+        match find_missing_transition state with
+        | Some trans ->
+            (* We found a missing transition. Adding this character or eof to
+               the current path makes it a non-matching input *)
+            let failing_path =
+              match trans with
+              | End_of_input -> path
+              | Input c -> c :: path
+            in
+            raise (Found_string (string_of_path failing_path))
+        | None ->
+            (* We didn't find a missing transition. Follow the transitions
+               that land on a state that hasn't already been visited,
+               extending the path with the character associated with
+               the transition. *)
+            let extended_paths =
+              Hashtbl.fold (fun trans dst_state extended_paths ->
+                match (trans : DFA.transition) with
+                | End_of_input -> extended_paths
+                | Input c ->
+                    if not (DFA_states.mem dst_state visited)
+                    && not (DFA_state_map.mem dst_state extended_paths) then
+                      DFA_state_map.add dst_state (c :: path) extended_paths
+                    else
+                      extended_paths
+              ) state.transitions extended_paths
+            in
+            (visited, extended_paths)
+      ) paths (visited, DFA_state_map.empty)
+    in
+    if DFA_state_map.is_empty extended_paths then
+      (* We visited all the reachable nodes *)
+      ()
+    else
+      bfs_visit visited extended_paths
+  in
+  try
+    bfs_visit DFA_states.empty (DFA_state_map.singleton start_state []);
+    Ok ()
+  with Found_string example ->
+    Error example
 
-let is_exhaustive_regexp (re : Regexp.t) =
-  let nfa_start, _nfa_states = NFA.make re in
-  let dfa_start, _dfa_states = DFA.make nfa_start in
-  is_exhaustive_dfa dfa_start
+let matches (state : DFA.state) str =
+  let rec matches (state : DFA.state) chars =
+    match chars with
+    | [] ->
+        Hashtbl.mem state.transitions End_of_input
+    | c :: chars ->
+        match Hashtbl.find_opt state.transitions (Input c) with
+        | Some state -> matches state chars
+        | None -> false
+  in
+  let chars = String.to_seq str |> List.of_seq in
+  matches state chars
