@@ -11,7 +11,9 @@ open Exhausteve
 *)
 let main () =
   let re = In_channel.input_all stdin |> Regexp_parser.of_string_exn in
-  print_endline (Regexp.show re);
+  let oc = open_out "regexp.txt" in
+  fprintf oc "%s\n" (Regexp.show re);
+  close_out oc;
   let nfa = NFA.make re in
   let dfa = DFA.make nfa in
   Export_graph.export_nfa_to_file "nfa.dot" nfa.states;

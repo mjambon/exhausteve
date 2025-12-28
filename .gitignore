@@ -1,6 +1,7 @@
 _build/
 
-# graphs
+# exhausteve's output files
+regexp.txt
 nfa.dot
 nfa.png
 dfa.dot

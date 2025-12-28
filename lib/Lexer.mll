@@ -5,7 +5,7 @@
    Syntax:
 
    - whitespace is ignored
-   - special characters are: | * ? + ( ) [ ] - ^ \
+   - special characters are: | * ? + ( ) [ ] - ^ . \
    - if a character is preceded by a backslash, it is interpreted literally
 
    Examples:

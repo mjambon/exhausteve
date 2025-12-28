@@ -13,7 +13,7 @@ let compare_state_id = Int.compare
 (* 42 -> "D42" to avoid confusion with NFA states named Nxxx *)
 let show_state_id id = sprintf "D%i" id
 
-let get_alphabet p =
+let get_possible_transitions p =
   End_of_input ::
   (Char_partition.alphabet p |> List.map (fun symbol -> Input symbol))
 
@@ -139,25 +139,24 @@ let make (nfa : NFA.t) : t =
         state
   in
 
-  let alphabet = get_alphabet nfa.char_partition in
+  let possible_transitions = get_possible_transitions nfa.char_partition in
 
   let rec translate_nfa_states (dfa_state : state) =
-    (* printf "translate %s\n" (show_state dfa_state); *)
     let nfa_transitions = union_of_nfa_transitions dfa_state.nfa_states in
     (* Iterate over the alphabet *)
     List.iter (fun possible_trans ->
       let dst_nfa_states =
-        Hashtbl.find_all nfa_transitions (nfa_trans_of_dfa_trans possible_trans)
+        Hashtbl.find_all nfa_transitions
+          (nfa_trans_of_dfa_trans possible_trans)
         |> merge_dst_nfa_states
       in
-      (* For now, avoid creating transitions to the dead state *)
       if not (NFA_states.is_empty dst_nfa_states) then
         let dst_dfa = get_dfa_state dst_nfa_states in
         if not (Hashtbl.mem dfa_state.transitions possible_trans) then (
           Hashtbl.add dfa_state.transitions possible_trans dst_dfa;
           translate_nfa_states dst_dfa
         )
-    ) alphabet
+    ) possible_transitions
   in
 
   let nfa_starts = merge_dst_nfa_states [nfa.initial_state] in
