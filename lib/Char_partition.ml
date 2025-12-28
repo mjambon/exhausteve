@@ -2,21 +2,23 @@
 
 open Printf
 
-type char_class_id = int
+type symbol_id = int
 
-type char_class = {
-  id: char_class_id;
+type symbol = {
+  id: symbol_id;
   chars: Char_class.t;
 }
 
 type t = {
   (* Array of character classes whose ID is the position in the array *)
-  partition: char_class array;
+  partition: symbol array;
   (* Array of length 256 mapping a char to its character class *)
-  bytes: char_class array;
+  bytes: symbol array;
 }
 
 let length p = Array.length p.partition
+
+let alphabet p = Array.to_list p.partition
 
 let assoc p c = p.bytes.(Char.code c)
 
@@ -74,8 +76,8 @@ let partition overlapping_char_classes =
     bytes;
   }
 
-module Char_class = struct
-  type t = char_class
+module Symbol = struct
+  type t = symbol
   let compare a b = Int.compare a.id b.id
   let equal a b = a.id = b.id
   let hash a = a.id

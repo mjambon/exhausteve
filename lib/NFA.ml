@@ -4,7 +4,7 @@ open Printf
 
 type transition =
   | Epsilon
-  | Input of char
+  | Input of Char_partition.symbol
   | End_of_input
 
 type state_id = int
@@ -35,9 +35,70 @@ type state = {
   transitions: (transition, state) Hashtbl.t;
 }
 
-type t = state * state array
+type t = {
+  initial_state: state;
+  states: state array;
+  char_partition: Char_partition.t;
+}
+
+(* Local regexp type over symbols rather than chars *)
+module RE = struct
+  type t =
+  | Empty (* empty character class *)
+  | Epsilon
+  | Char of Char_partition.symbol
+  | Seq of t * t
+  | Alt of t * t
+  | Repeat of t
+end
+
+module Symbols = Set.Make (Char_partition.Symbol)
+
+let rec collect_char_classes (re : Regexp.t) : Char_class.t list =
+  match re with
+  | Epsilon -> []
+  | Char cc -> [cc]
+  | Seq (a, b) -> collect_char_classes a @ collect_char_classes b
+  | Alt (a, b) -> collect_char_classes a @ collect_char_classes b
+  | Repeat a -> collect_char_classes a
+
+(*
+   Map a character class in the original alphabet (char/bytes) to
+   a smaller alphabet obtained by grouping characters that are treated
+   equivalently by the automata. A Char_partition.symbol is a
+   symbol in the new alphabet.
+*)
+let map_char_class (p : Char_partition.t) (cc : Char_class.t) : RE.t =
+  let symbols =
+    Char_class.fold (fun char symbols ->
+      let symbol = Char_partition.assoc p char in
+      Symbols.add symbol symbols
+    ) cc Symbols.empty
+  in
+  match Symbols.elements symbols with
+  | [] -> Empty
+  | symbol :: symbols ->
+      List.fold_right (fun symbol re -> RE.Alt (Char symbol, re))
+        symbols (RE.Char symbol)
+
+let map_regexp (re : Regexp.t) : Char_partition.t * RE.t =
+  (* Define the new alphabet by grouping equivalent characters *)
+  let p = Char_partition.partition (collect_char_classes re) in
+  (* Map the Char nodes to the new regexp type to be translated to an
+     automaton *)
+  let rec map (re : Regexp.t) : RE.t =
+    match re with
+    | Epsilon -> Epsilon
+    | Seq (a, b) -> Seq (map a, map b)
+    | Alt (a, b) -> Alt (map a, map b)
+    | Repeat a -> Repeat (map a)
+    | Char cc -> map_char_class p cc
+  in
+  (p, map re)
 
 let make (re : Regexp.t) : t =
+  let char_partition, re = map_regexp re in
+
   let state_counter = ref 0 in
 
   let new_id () =
@@ -73,9 +134,10 @@ let make (re : Regexp.t) : t =
 
   (* Translate the regular expression to take us from the current state
      to the next state after this regexp *)
-  let rec translate_regexp cur_state (re : Regexp.t) next_state =
+  let rec translate_regexp cur_state (re : RE.t) next_state =
     match re with
-    | Empty ->
+    | Empty -> ()
+    | Epsilon ->
         add_transition cur_state Epsilon next_state
     | Char c ->
         add_transition cur_state (Input c) next_state
@@ -107,4 +169,6 @@ let make (re : Regexp.t) : t =
     |> Array.of_list
   in
   Array.iteri (fun i state -> assert (state.id = i)) state_array;
-  initial_state, state_array
+  { initial_state;
+    states = state_array;
+    char_partition }

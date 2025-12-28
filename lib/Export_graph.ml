@@ -55,12 +55,12 @@ let export_dot oc states transitions =
 let label_of_nfa_transition (x : NFA.transition) =
   match x with
   | Epsilon -> "ε"
-  | Input c -> sprintf "'%c'" c
+  | Input c -> Char_partition.Symbol.show c
   | End_of_input -> "eof"
 
 let label_of_dfa_transition (x : DFA.transition) =
   match x with
-  | Input c -> sprintf "'%c'" c
+  | Input c -> Char_partition.Symbol.show c
   | End_of_input -> "eof"
 
 let nfa_name (state : NFA.state) =

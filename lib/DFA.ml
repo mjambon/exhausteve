@@ -3,7 +3,7 @@
 open Printf
 
 type transition =
-  | Input of char
+  | Input of Char_partition.symbol
   | End_of_input
 
 type state_id = int
@@ -13,8 +13,9 @@ let compare_state_id = Int.compare
 (* 42 -> "D42" to avoid confusion with NFA states named Nxxx *)
 let show_state_id id = sprintf "D%i" id
 
-let alphabet =
-  End_of_input :: List.init 256 (fun i -> Input (char_of_int i))
+let get_alphabet p =
+  End_of_input ::
+  (Char_partition.alphabet p |> List.map (fun symbol -> Input symbol))
 
 let nfa_trans_of_dfa_trans (trans : transition) : NFA.transition =
   match trans with
@@ -49,7 +50,11 @@ type state = {
   transitions: (transition, state) Hashtbl.t;
 }
 
-type t = state * state array
+type t = {
+  initial_state: state;
+  states: state array;
+  char_partition: Char_partition.t;
+}
 
 let compare_state a b =
   compare_state_id a.id b.id
@@ -94,7 +99,7 @@ let merge_dst_nfa_states
     NFA_states.union states (epsilon_closure state)
   ) NFA_states.empty nfa_states_before_epsilon_closure
 
-let make (nfa_start : NFA.state) : t =
+let make (nfa : NFA.t) : t =
   let state_counter = ref 0 in
 
   let new_id () =
@@ -124,6 +129,8 @@ let make (nfa_start : NFA.state) : t =
         state
   in
 
+  let alphabet = get_alphabet nfa.char_partition in
+
   let rec translate_nfa_states (dfa_state : state) =
     (* printf "translate %s\n" (show_state dfa_state); *)
     let nfa_transitions = union_of_nfa_transitions dfa_state.nfa_states in
@@ -143,7 +150,7 @@ let make (nfa_start : NFA.state) : t =
     ) alphabet
   in
 
-  let nfa_starts = merge_dst_nfa_states [nfa_start] in
+  let nfa_starts = merge_dst_nfa_states [nfa.initial_state] in
   let dfa_start = get_dfa_state nfa_starts in
   translate_nfa_states dfa_start;
 
@@ -154,4 +161,6 @@ let make (nfa_start : NFA.state) : t =
   in
   Array.iteri (fun i state -> assert (state.id = i)) state_array;
 
-  (dfa_start, state_array)
+  { initial_state = dfa_start;
+    states = state_array;
+    char_partition = nfa.char_partition }

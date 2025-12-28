@@ -1,9 +1,9 @@
 (* Analyze the DFA for exhaustiveness *)
 
 let compile re =
-  let nfa_start, _nfa_states = NFA.make re in
-  let dfa_start, _dfa_states = DFA.make nfa_start in
-  dfa_start
+  let nfa = NFA.make re in
+  let dfa = DFA.make nfa in
+  dfa
 
 module DFA_states = Set.Make (struct
     type t = DFA.state
@@ -15,21 +15,26 @@ module DFA_state_map = Map.Make (struct
     let compare = DFA.compare_state
 end)
 
-let string_of_path (path : char list) =
+let string_of_path (path : Char_partition.symbol list) =
   path
   |> List.rev
+  |> List.map (fun (symbol: Char_partition.symbol) ->
+    match Char_class.choose_opt symbol.chars with
+    | None ->
+        (* A symbol may not be created for an empty character class *)
+        assert false
+    | Some char -> char
+  )
   |> List.to_seq
   |> String.of_seq
 
 exception Missing_transition of DFA.transition
 
-(* All possible transitions sorted so as to start with printable characters
-   because they're a little nicer to put into examples when we have a choice *)
-let transitions_sorted_by_order_of_importance =
+let get_possible_transitions (p : Char_partition.t) =
   DFA.End_of_input
-  :: List.init 256 (fun i -> DFA.Input (char_of_int ((i + 32) mod 256)))
+  :: List.map (fun symbol -> DFA.Input symbol) (Char_partition.alphabet p)
 
-let find_missing_transition (state : DFA.state) =
+let find_missing_transition possible_transitions (state : DFA.state) =
   if state.final then
     None
   else
@@ -38,7 +43,7 @@ let find_missing_transition (state : DFA.state) =
       List.iter (fun trans ->
         if not (Hashtbl.mem transitions trans) then
           raise (Missing_transition trans)
-      ) transitions_sorted_by_order_of_importance;
+      ) possible_transitions;
       None
     with Missing_transition trans -> Some trans
 
@@ -53,14 +58,15 @@ exception Found_string of string
    We try to provide nice examples by favoring shorter input strings.
    This is achieved by visiting the graph breadth-first instead of depth-first.
 *)
-let is_exhaustive (start_state : DFA.state) =
+let is_exhaustive (dfa : DFA.t) =
+  let possible_transitions = get_possible_transitions dfa.char_partition in
   let rec bfs_visit
       visited
-      (paths : char list DFA_state_map.t) =
+      (paths : Char_partition.symbol list DFA_state_map.t) =
     let visited, extended_paths =
       DFA_state_map.fold (fun state path (visited, extended_paths) ->
         let visited = DFA_states.add state visited in
-        match find_missing_transition state with
+        match find_missing_transition possible_transitions state with
         | Some trans ->
             (* We found a missing transition. Adding this character or eof to
                the current path makes it a non-matching input *)
@@ -97,20 +103,25 @@ let is_exhaustive (start_state : DFA.state) =
       bfs_visit visited extended_paths
   in
   try
-    bfs_visit DFA_states.empty (DFA_state_map.singleton start_state []);
+    bfs_visit DFA_states.empty (DFA_state_map.singleton dfa.initial_state []);
     Ok ()
   with Found_string example ->
     Error example
 
-let matches (state : DFA.state) str =
+let matches (dfa : DFA.t) str =
   let rec matches (state : DFA.state) chars =
     match chars with
     | [] ->
         Hashtbl.mem state.transitions End_of_input
-    | c :: chars ->
-        match Hashtbl.find_opt state.transitions (Input c) with
+    | char :: chars ->
+        let symbol = Char_partition.assoc dfa.char_partition char in
+        match Hashtbl.find_opt state.transitions (Input symbol) with
         | Some state -> matches state chars
         | None -> false
   in
-  let chars = String.to_seq str |> List.of_seq in
-  matches state chars
+  let chars =
+    str
+    |> String.to_seq
+    |> List.of_seq
+  in
+  matches dfa.initial_state chars

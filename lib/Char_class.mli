@@ -19,8 +19,12 @@ type t
 (** Return the elements of the character class in order *)
 val elements : t -> char list
 
+(** Return one element *)
+val choose_opt : t -> char option
+
 (** Show the elements in a compact representation using ranges *)
 val show : t -> string
+val pp : Format.formatter -> t -> unit
 
 (** An empty character class can be used in a regular expression to
     represent the empty language as it is guaranteed to never match
@@ -47,3 +51,6 @@ val digit : t
 
 (** Whether a character belongs to a character class *)
 val mem : char -> t -> bool
+
+val fold : (char -> 'acc -> 'acc) -> t -> 'acc -> 'acc
+val iter : (char -> unit) -> t -> unit

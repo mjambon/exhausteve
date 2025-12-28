@@ -26,7 +26,7 @@ main:
 regexp0:
 | regexp0 BAR regexp0    { Alt ($1, $3) }
 | seq                    { $1 }
-|                        { Empty }
+|                        { Epsilon }
 ;
 
 seq:
@@ -37,12 +37,12 @@ seq:
 repeat:
 | regexp1 STAR          { Repeat $1 }
 | regexp1 PLUS          { Seq ($1, Repeat $1) }
-| regexp1 QUESTION      { Alt ($1, Empty) }
+| regexp1 QUESTION      { Alt ($1, Epsilon) }
 | regexp1               { $1 }
 ;
 
 regexp1:
-| CHAR                      { Char $1 }
+| CHAR                      { Char (Char_class.singleton $1) }
 | LPAR regexp0 RPAR         { $2 }
 ;
 

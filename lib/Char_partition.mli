@@ -3,11 +3,11 @@
 type t
 
 (** The zero-based index of a character class *)
-type char_class_id = private int
+type symbol_id = private int
 
 (** A char class with its index within a partition *)
-type char_class = {
-  id: char_class_id;
+type symbol = private {
+  id: symbol_id;
   chars: Char_class.t;
 }
 
@@ -27,16 +27,19 @@ val partition : Char_class.t list -> t
     transitions. *)
 val length : t -> int
 
+(** Return all the valid symbols *)
+val alphabet : t -> symbol list
+
 (** Associate a character with its char_class in the partition *)
-val assoc : t -> char -> char_class
+val assoc : t -> char -> symbol
 
 (** Standard operations needed to feed Set.Make, Map.Make,
     and Hashtbl.Make functors.
 
     We could use a functor to ensure statically that two char_class
     are indeed from the same partition but it's overkill. *)
-module Char_class : sig
-  type t = char_class
+module Symbol : sig
+  type t = symbol
   val compare : t -> t -> int
   val equal : t -> t -> bool
   val hash : t -> int

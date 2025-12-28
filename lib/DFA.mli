@@ -1,7 +1,7 @@
 (** DFA (deterministic finite automaton) representing a regular expression *)
 
 type transition =
-  | Input of char
+  | Input of Char_partition.symbol
   | End_of_input
 
 type state_id = private int
@@ -25,6 +25,10 @@ val show_state : state -> string
 
 val compare_state : state -> state -> int
 
-type t = state * state array
+type t = {
+  initial_state: state;
+  states: state array;
+  char_partition: Char_partition.t;
+}
 
-val make : NFA.state -> t
+val make : NFA.t -> t

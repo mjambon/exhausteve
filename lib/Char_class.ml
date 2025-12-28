@@ -33,8 +33,10 @@ let alpha = union (range 'a' 'z') (range 'A' 'Z')
 let digit = range '0' '9'
 
 let mem = CC.mem
-
 let elements = CC.elements
+let choose_opt = CC.choose_opt
+let fold = CC.fold
+let iter = CC.iter
 
 let elements_as_ranges cc =
   let rec loop ranges first last chars =
@@ -70,3 +72,6 @@ let show cc =
   |> elements_as_ranges
   |> List.map show_range
   |> String.concat ", "
+
+let pp fmt cc =
+  Format.pp_print_string fmt (show cc)

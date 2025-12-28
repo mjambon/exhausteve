@@ -1,9 +1,12 @@
 (** NFA representing a regular expression *)
 
 type transition =
-  | Epsilon (** an empty transition; those aren't allowed in DFAs *)
-  | Input of char (** a character of input being consumed *)
-  | End_of_input (** end of input; treated mostly like an input character *)
+  | Epsilon
+      (** an empty transition; those aren't allowed in DFAs *)
+  | Input of Char_partition.symbol
+      (** a character of input being consumed *)
+  | End_of_input
+      (** end of input; treated mostly like an input character *)
 
 type state_id = private int
 
@@ -34,8 +37,12 @@ type state = {
   transitions: (transition, state) Hashtbl.t;
 }
 
-(** The initial state, linking to all reachable states and the array of
-    all the states *)
-type t = state * state array
+(** The automaton defined over symbols that are groupings of equivalent
+    characters. *)
+type t = {
+  initial_state: state;
+  states: state array;
+  char_partition: Char_partition.t;
+}
 
 val make : Regexp.t -> t
