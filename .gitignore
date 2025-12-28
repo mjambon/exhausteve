@@ -1,1 +1,7 @@
 _build/
+
+# graphs
+nfa.dot
+nfa.png
+dfa.dot
+dfa.png

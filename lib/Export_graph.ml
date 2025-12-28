@@ -69,7 +69,7 @@ let nfa_name (state : NFA.state) =
 let dfa_name (state : DFA.state) =
   sprintf "%s\n%s"
     (DFA.show_state_id state.id)
-    (DFA.show_nfa_states state.nfa_states)
+    (DFA.show_nfa_states ~max_len:10 state.nfa_states)
 
 let export_nfa oc states =
   let nodes, nested_edges =

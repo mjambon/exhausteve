@@ -10,7 +10,7 @@ val show_state_id : state_id -> string
 
 module NFA_states : Set.S with type elt = NFA.state
 
-val show_nfa_states : NFA_states.t -> string
+val show_nfa_states : ?max_len:int -> NFA_states.t -> string
 
 (** A DFA state. The original unique ID is a set of NFA state IDs.
     The [id] field is a unique int generated from a counter. *)

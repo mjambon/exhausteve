@@ -59,10 +59,20 @@ type t = {
 let compare_state a b =
   compare_state_id a.id b.id
 
-let show_nfa_states nfa_states =
-  NFA_states.elements nfa_states
-  |> List.map (fun (state : NFA.state) -> NFA.show_state_id state.id)
-  |> String.concat ", "
+let show_nfa_states ?max_len nfa_states =
+  let all = NFA_states.elements nfa_states in
+  (match max_len with
+   | Some n when List.length all > n ->
+       (List.take n all
+        |> List.map (fun (state : NFA.state) -> NFA.show_state_id state.id)
+        |> String.concat ", ")
+       ^ ", ..."
+   | None
+   | Some _ ->
+       all
+       |> List.map (fun (state : NFA.state) -> NFA.show_state_id state.id)
+       |> String.concat ", "
+  )
   |> sprintf "{%s}"
 
 let show_state state =
