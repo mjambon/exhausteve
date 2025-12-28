@@ -4,7 +4,7 @@ build:
 
 .PHONY: demo
 demo:
-	echo "a b* | c?" | ./exhausteve
+	echo "..ab * | c?" | ./exhausteve
 	$(MAKE) graphs
 
 # 'dot' is part of Graphviz.

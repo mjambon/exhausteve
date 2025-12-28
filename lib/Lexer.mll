@@ -5,12 +5,13 @@
    Syntax:
 
    - whitespace is ignored
-   - special characters are: | * ? + ( ) \
+   - special characters are: | * ? + ( ) [ ] - ^ \
    - if a character is preceded by a backslash, it is interpreted literally
 
-   Example:
+   Examples:
 
      a* (b|c) d?
+     [a-z][^0-9]+
 *)
 
 {
@@ -28,5 +29,10 @@ rule token = parse
 | '*'            { STAR }
 | '+'            { PLUS }
 | '?'            { QUESTION }
+| '.'            { DOT }
+| '['            { LBR }
+| ']'            { RBR }
+| '-'            { DASH }
+| '^'            { CARET }
 | _ as c         { CHAR c }
 | eof            { EOF }
