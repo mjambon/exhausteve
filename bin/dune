@@ -2,6 +2,7 @@
  (public_name exhausteve)
  (name Main)
  (libraries
+   cmdliner
    exhausteve
  )
 )

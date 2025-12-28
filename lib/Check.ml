@@ -1,7 +1,7 @@
 (* Analyze the DFA for exhaustiveness *)
 
-let compile re =
-  let nfa = NFA.make re in
+let compile matching_mode re =
+  let nfa = NFA.make matching_mode re in
   let dfa = DFA.make nfa in
   dfa
 

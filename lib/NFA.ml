@@ -39,6 +39,7 @@ type t = {
   initial_state: state;
   states: state array;
   char_partition: Char_partition.t;
+  mode: Conf.matching_mode;
 }
 
 (* Local regexp type over symbols rather than chars *)
@@ -96,7 +97,7 @@ let map_regexp (re : Regexp.t) : Char_partition.t * RE.t =
   in
   (p, map re)
 
-let make (re : Regexp.t) : t =
+let make (mode: Conf.matching_mode) (re : Regexp.t) : t =
   let char_partition, re = map_regexp re in
 
   let state_counter = ref 0 in
@@ -171,4 +172,5 @@ let make (re : Regexp.t) : t =
   Array.iteri (fun i state -> assert (state.id = i)) state_array;
   { initial_state;
     states = state_array;
-    char_partition }
+    char_partition;
+    mode }

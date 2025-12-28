@@ -43,6 +43,7 @@ type t = {
   initial_state: state;
   states: state array;
   char_partition: Char_partition.t;
+  mode: Conf.matching_mode;
 }
 
-val make : Regexp.t -> t
+val make : Conf.matching_mode -> Regexp.t -> t

@@ -3,7 +3,7 @@
 (** Convert a regular expression into a DFA usable for matching or
     for analysis. To get all the DFA states or to check the intermediate
     NFA, use the NFA and DFA modules directly instead. *)
-val compile : Regexp.t -> DFA.t
+val compile : Conf.matching_mode -> Regexp.t -> DFA.t
 
 (** Check whether a DFA starting from the given state can match
     any input. If not, an example of non-matching input is returned. *)

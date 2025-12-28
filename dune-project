@@ -21,7 +21,11 @@
  (name exhausteve)
  (synopsis "A regular expression exhaustiveness checker")
  (description "A regular expression exhaustiveness checker")
- (depends ocaml)
+ (depends
+   (ocaml (>= 4.14.0))
+   (cmdliner (>= 2.0.0))
+   (testo :with-test)
+ )
  (tags
   ("regular expressions" "static analysis")))
 

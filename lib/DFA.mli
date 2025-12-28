@@ -29,6 +29,7 @@ type t = {
   initial_state: state;
   states: state array;
   char_partition: Char_partition.t;
+  mode: Conf.matching_mode;
 }
 
 val make : NFA.t -> t

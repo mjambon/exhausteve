@@ -54,6 +54,7 @@ type t = {
   initial_state: state;
   states: state array;
   char_partition: Char_partition.t;
+  mode: Conf.matching_mode;
 }
 
 let compare_state a b =
@@ -172,4 +173,5 @@ let make (nfa : NFA.t) : t =
 
   { initial_state = dfa_start;
     states = state_array;
-    char_partition = nfa.char_partition }
+    char_partition = nfa.char_partition;
+    mode = nfa.mode }
