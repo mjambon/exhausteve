@@ -49,6 +49,20 @@ Run `make` to build the library and the `exhausteve` executable.
 Run `make test` to test, `make demo` for a demo.
 Look into the makefile for more.
 
+Options
+-------
+
+To check whether a regular expression matches some prefix of an
+arbitrary input string as in a lexer, use the prefix mode that is
+selected with the `--mode prefix` option.
+
+```
+$ echo '[a-z]+ | [0-9]+ | $' | ./exhausteve --mode prefix
+The provided regular expression is not exhaustive.
+Here is an example of nonmatching input:
+"\000"
+```
+
 Graphs etc.
 -----------
 
