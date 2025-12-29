@@ -167,10 +167,11 @@ let tests _env = [
   test_exhaustiveness_prefix "(.?|...+)$" (Error "\000\000");
   test_exhaustiveness_prefix ".? | [^h]. | .[^i] | ...+" (Ok ());
   test_exhaustiveness_prefix "(.? | [^h]. | .[^i]) $ | ...+" (Error "hi");
-  test_exhaustiveness_prefix "(..)*" (Error "\000");
+  test_exhaustiveness_prefix "(..)*" (Ok ());
+  test_exhaustiveness_prefix "(..)*$" (Error "\000");
   test_exhaustiveness_prefix
     ~name:"nice graphs"
-    ". | (..)* | (...)*" (Error "\000\000\000\000\000");
+    "(. | (..)* | (...)*) $" (Error "\000\000\000\000\000")
 ]
 
 (* Entry point of the test executable *)

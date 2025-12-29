@@ -51,6 +51,7 @@ exception Found_string of string
 
 (*
    The DFA represents a regular expression.
+
    In order to match any input, each state of the automaton must be either
    final or have a transition defined for any character including the
    special end-of-input character.
@@ -66,34 +67,37 @@ let is_exhaustive (dfa : DFA.t) =
     let visited, extended_paths =
       DFA_state_map.fold (fun state path (visited, extended_paths) ->
         let visited = DFA_states.add state visited in
-        match find_missing_transition possible_transitions state with
-        | Some trans ->
-            (* We found a missing transition. Adding this character or eof to
-               the current path makes it a non-matching input *)
-            let failing_path =
-              match trans with
-              | End_of_input -> path
-              | Input c -> c :: path
-            in
-            raise (Found_string (string_of_path failing_path))
-        | None ->
-            (* We didn't find a missing transition. Follow the transitions
-               that land on a state that hasn't already been visited,
-               extending the path with the character associated with
-               the transition. *)
-            let extended_paths =
-              Hashtbl.fold (fun trans dst_state extended_paths ->
-                match (trans : DFA.transition) with
-                | End_of_input -> extended_paths
-                | Input c ->
-                    if not (DFA_states.mem dst_state visited)
-                    && not (DFA_state_map.mem dst_state extended_paths) then
-                      DFA_state_map.add dst_state (c :: path) extended_paths
-                    else
-                      extended_paths
-              ) state.transitions extended_paths
-            in
-            (visited, extended_paths)
+        if state.final then
+          (visited, extended_paths)
+        else
+          match find_missing_transition possible_transitions state with
+          | Some trans ->
+              (* We found a missing transition. Adding this character or eof to
+                 the current path makes it a non-matching input *)
+              let failing_path =
+                match trans with
+                | End_of_input -> path
+                | Input c -> c :: path
+              in
+              raise (Found_string (string_of_path failing_path))
+          | None ->
+              (* We didn't find a missing transition. Follow the transitions
+                 that land on a state that hasn't already been visited,
+                 extending the path with the character associated with
+                 the transition. *)
+              let extended_paths =
+                Hashtbl.fold (fun trans dst_state extended_paths ->
+                  match (trans : DFA.transition) with
+                  | End_of_input -> extended_paths
+                  | Input c ->
+                      if not (DFA_states.mem dst_state visited)
+                      && not (DFA_state_map.mem dst_state extended_paths) then
+                        DFA_state_map.add dst_state (c :: path) extended_paths
+                      else
+                        extended_paths
+                ) state.transitions extended_paths
+              in
+              (visited, extended_paths)
       ) paths (visited, DFA_state_map.empty)
     in
     if DFA_state_map.is_empty extended_paths then
