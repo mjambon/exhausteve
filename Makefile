@@ -3,6 +3,11 @@ build:
 	dune build @install
 	ln -sf _build/install/default/bin/exhausteve .
 
+# Install build-time dependencies. Requires opam.
+.PHONY: setup
+setup:
+	opam install --deps-only ./exhausteve.opam
+
 .PHONY: test
 test:
 	dune build
@@ -11,7 +16,7 @@ test:
 
 .PHONY: demo
 demo:
-	echo ".?a*" | ./exhausteve
+	echo '. | (..)* | (...)*' | ./exhausteve
 	$(MAKE) graphs
 
 # Check a regular expression that matches any string except "hello"

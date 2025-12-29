@@ -23,7 +23,7 @@
  (description "A regular expression exhaustiveness checker")
  (depends
    (ocaml (>= 4.14.0))
-   (cmdliner (>= 2.0.0))
+   cmdliner
    (alcotest :with-test)
    (testo :with-test)
  )

@@ -107,6 +107,9 @@ let tests _env = [
   test_exhaustiveness_full ".?|...+" (Error "\000\000");
   test_exhaustiveness_full ".? | [^h]. | .[^i] | ...+" (Error "hi");
   test_exhaustiveness_full "(..)*" (Error "\000");
+  test_exhaustiveness_full
+    ~name:"nice graphs"
+    ".|(..)*|(...)*" (Error "\000\000\000\000\000");
 ]
 
 (* Entry point of the test executable *)
