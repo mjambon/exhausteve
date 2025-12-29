@@ -1,5 +1,9 @@
 _build/
 
+# symlinks
+exhausteve
+test
+
 # exhausteve's output files
 regexp.txt
 nfa.dot

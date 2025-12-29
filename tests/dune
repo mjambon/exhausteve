@@ -1,0 +1,9 @@
+(executable
+ (name test)
+ (modules Test)
+ (libraries
+   alcotest
+   testo
+   exhausteve
+ )
+)

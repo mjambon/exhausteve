@@ -1,10 +1,13 @@
 .PHONY: build
 build:
 	dune build @install
+	ln -sf _build/install/default/bin/exhausteve .
 
 .PHONY: test
 test:
-	@echo "tests coming soon!"
+	dune build
+	ln -sf _build/default/tests/test.exe test
+	./test
 
 .PHONY: demo
 demo:
