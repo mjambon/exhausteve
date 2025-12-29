@@ -2,7 +2,8 @@ Exhausteve
 ==========
 
 Exhausteve is an OCaml library and an executable that checks whether a
-classic regular expression matches all strings i.e. is equivalent to `.*`.
+classic [regular expression](https://en.wikipedia.org/wiki/Regular_language)
+matches all strings i.e. is equivalent to `.*`.
 
 Here's a hello-world example:
 
