@@ -14,7 +14,11 @@ Here is an example of nonmatching input:
 ```
 
 The algorithm is a standard conversion of a regular expression tree
-into an NFA and then into a DFA which is then visited breadth-first
+into an
+[NFA](https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton)
+and then into an equivalent
+[DFA](https://en.wikipedia.org/wiki/Deterministic_finite_automaton)
+which is then visited breadth-first
 until a missing state transition is found.
 
 The only optimization is the conversion of the original alphabet
@@ -69,7 +73,7 @@ Here's the NFA:
 
 And here's the DFA derived from the NFA:
 
-![DFA](img/demo-Dfa.png "DFA")
+![DFA](img/demo-dfa.png "DFA")
 
 Note the two nodes (states) without an `eof` transition leading the final
 state, indicating that any string ending on one of these states will be
