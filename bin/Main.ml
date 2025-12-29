@@ -40,25 +40,27 @@ let man = [
       i.e. whether it is equivalent to '.*'. \
       If there exists some input it can't match, an example \
       is provided.";
-  `P "Syntax: whitespace is ignored. The usual '*', '+', '?',
-      '|' are supported. Character classes using the usual bracket notation \
-      and a leading caret for complement are supported. '$' matches at the \
+
+  `P {|Example:|};
+  `Pre {|\$ echo '.? | [^h]. | .[^i] | ...+' | exhausteve
+The provided regular expression is not exhaustive.
+Here is an example of nonmatching input:
+"hi"|};
+
+  `P "Syntax: whitespace is ignored. The usual quantifiers '*', '+', and '?' \
+      are supported,
+      as is alternation with '|' and grouping with parentheses. \
+      Character classes using the usual bracket notation \
+      and a leading caret for complement are supported. '\\$' matches at the \
       end of the string and is useful in prefix mode.
       Any character \
       preceded by a backslash is interpreted literally and the backslash \
       is ignored. Special characters must be escaped \
       with a backslash to match literally. The special characters are: \
-      '|' '*' '?' '+' '(' ')' '[' ']' '-' '^' '.' '$', backslash, whitespace \
-      (SPACE HT CR LF). See example in the EXAMPLES section";
+      '|' '*' '?' '+' '(' ')' '[' ']' '-' '^' '.' '\\$', backslash, \
+      whitespace (SPACE HT CR LF).";
 
   (* 'ARGUMENTS' and 'OPTIONS' sections are inserted here by cmdliner. *)
-
-  `S Manpage.s_examples; (* standard 'EXAMPLES' section *)
-  `Pre {|\$ echo '.? | [^h]. | .[^i] | ...+' | exhausteve
-The provided regular expression is not exhaustive.
-Here is an example of nonmatching input:
-"hi"
-|};
 
   `S Manpage.s_authors;
   `P "Martin Jambon <martin@mjambon.com>";
