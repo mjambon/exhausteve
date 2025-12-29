@@ -56,11 +56,38 @@ To check whether a regular expression matches some prefix of an
 arbitrary input string as in a lexer, use the prefix mode that is
 selected with the `--mode prefix` option.
 
+Consider the following ocamllex rule:
+```
+rule token = parse
+| ['a'-'z']+  { WORD }
+| ['0'-'9']+  { NUMBER }
+| eof         { EOF }
+```
+
+We can check whether this `token` rule tolerates any input by checking
+the disjunction of the patterns:
 ```
 $ echo '[a-z]+ | [0-9]+ | $' | ./exhausteve --mode prefix
 The provided regular expression is not exhaustive.
 Here is an example of nonmatching input:
 "\000"
+```
+
+This indicates that our ocamllex rule is broken. It might be fixed as
+follows:
+
+```
+rule token = parse
+| ['a'-'z']+  { WORD }
+| ['0'-'9']+  { NUMBER }
+| eof         { EOF }
+| _ as c      { error lexbuf (sprintf "Invalid character %C" c) }
+```
+
+We can now check mechanically that the new rule is exhaustive:
+```
+$ echo '[a-z]+ | [0-9]+ | $ | .' | ./exhausteve --mode prefix
+The provided regular expression is exhaustive.
 ```
 
 Graphs etc.
