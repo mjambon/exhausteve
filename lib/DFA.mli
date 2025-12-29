@@ -32,4 +32,6 @@ type t = {
   mode: Conf.matching_mode;
 }
 
+(** Build a DFA equivalent to the given NFA which itself is built
+    from a regular expression. *)
 val make : NFA.t -> t

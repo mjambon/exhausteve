@@ -46,4 +46,8 @@ type t = {
   mode: Conf.matching_mode;
 }
 
+(** Build an NFA equivalent to the given regular expression.
+
+    The matching mode specifies whether we want to match the whole input
+    string or if leaving some input unmatched is acceptable. *)
 val make : Conf.matching_mode -> Regexp.t -> t
