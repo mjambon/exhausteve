@@ -17,15 +17,17 @@
 v}
 *)
 type t =
-  | Epsilon
-  | Char of Char_class.t
-  | Seq of t * t
-  | Alt of t * t
-  | Repeat of t
+  | Epsilon (** match the empty sequence *)
+  | End_of_input (** match at the end of the string; useful in prefix mode *)
+  | Char of Char_class.t (** match any input character in the character
+                             class *)
+  | Seq of t * t (** match two patterns in sequence *)
+  | Alt of t * t (** match either one pattern or the other *)
+  | Repeat of t (** match a pattern repeatedly, zero times or more *)
 [@@deriving show { with_path = false }]
 
-(** Match one or more ("+" quantifier) *)
+(** Match the pattern once or multiple times ("+" quantifier) *)
 val repeat1 : t -> t
 
-(** Match zero or one ("?" quantifier) *)
+(** Match the pattern at most once ("?" quantifier) *)
 val opt : t -> t

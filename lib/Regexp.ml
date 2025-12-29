@@ -5,6 +5,7 @@
 (* The type of a regular expression *)
 type t =
   | Epsilon
+  | End_of_input
   | Char of Char_class.t
   | Seq of t * t
   | Alt of t * t

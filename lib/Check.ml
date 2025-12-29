@@ -110,14 +110,19 @@ let is_exhaustive (dfa : DFA.t) =
 
 let matches (dfa : DFA.t) str =
   let rec matches (state : DFA.state) chars =
-    match chars with
-    | [] ->
-        Hashtbl.mem state.transitions End_of_input
-    | char :: chars ->
-        let symbol = Char_partition.assoc dfa.char_partition char in
-        match Hashtbl.find_opt state.transitions (Input symbol) with
-        | Some state -> matches state chars
-        | None -> false
+    if state.final then
+      true
+    else
+      match chars with
+      | [] ->
+          (match Hashtbl.find_opt state.transitions End_of_input with
+           | Some state -> state.final
+           | None -> false)
+      | char :: chars ->
+          let symbol = Char_partition.assoc dfa.char_partition char in
+          match Hashtbl.find_opt state.transitions (Input symbol) with
+          | Some state -> matches state chars
+          | None -> false
   in
   let chars =
     str

@@ -9,7 +9,7 @@
   open Regexp
 %}
 
-%token BAR LPAR RPAR STAR PLUS QUESTION DOT LBR RBR DASH CARET EOF
+%token BAR LPAR RPAR STAR PLUS QUESTION DOT LBR RBR DASH CARET DOLLAR EOF
 %token <char> CHAR
 
 /* cosmetic preference */
@@ -47,6 +47,7 @@ regexp1:
 | DOT                       { Char Char_class.any }
 | LBR char_class RBR        { Char $2 }
 | LBR CARET char_class RBR  { Char (Char_class.diff Char_class.any $3) }
+| DOLLAR                    { End_of_input }
 ;
 
 char_class:

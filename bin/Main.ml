@@ -42,11 +42,13 @@ let man = [
       is provided.";
   `P "Syntax: whitespace is ignored. The usual '*', '+', '?',
       '|' are supported. Character classes using the usual bracket notation \
-      and a leading caret for complement are supported. Any character \
+      and a leading caret for complement are supported. '$' matches at the \
+      end of the string and is useful in prefix mode.
+      Any character \
       preceded by a backslash is interpreted literally and the backslash \
       is ignored. Special characters must be escaped \
       with a backslash to match literally. The special characters are: \
-      '|' '*' '?' '+' '(' ')' '[' ']' '-' '^' '.', backslash, whitespace \
+      '|' '*' '?' '+' '(' ')' '[' ']' '-' '^' '.' '$', backslash, whitespace \
       (SPACE HT CR LF). See example in the EXAMPLES section";
 
   (* 'ARGUMENTS' and 'OPTIONS' sections are inserted here by cmdliner. *)

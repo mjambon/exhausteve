@@ -47,6 +47,7 @@ module RE = struct
   type t =
   | Empty (* empty character class *)
   | Epsilon
+  | End_of_input
   | Char of Char_partition.symbol
   | Seq of t * t
   | Alt of t * t
@@ -58,6 +59,7 @@ module Symbols = Set.Make (Char_partition.Symbol)
 let rec collect_char_classes (re : Regexp.t) : Char_class.t list =
   match re with
   | Epsilon -> []
+  | End_of_input -> []
   | Char cc -> [cc]
   | Seq (a, b) -> collect_char_classes a @ collect_char_classes b
   | Alt (a, b) -> collect_char_classes a @ collect_char_classes b
@@ -90,6 +92,7 @@ let map_regexp (re : Regexp.t) : Char_partition.t * RE.t =
   let rec map (re : Regexp.t) : RE.t =
     match re with
     | Epsilon -> Epsilon
+    | End_of_input -> End_of_input
     | Seq (a, b) -> Seq (map a, map b)
     | Alt (a, b) -> Alt (map a, map b)
     | Repeat a -> Repeat (map a)
@@ -140,6 +143,8 @@ let make (mode: Conf.matching_mode) (re : Regexp.t) : t =
     | Empty -> ()
     | Epsilon ->
         add_transition cur_state Epsilon next_state
+    | End_of_input ->
+        add_transition cur_state End_of_input next_state
     | Char c ->
         add_transition cur_state (Input c) next_state
     | Seq (a, b) ->
@@ -160,9 +165,20 @@ let make (mode: Conf.matching_mode) (re : Regexp.t) : t =
         add_transition state Epsilon next_state
   in
   let initial_state = create_state () in
-  let penultimate_state = create_state () in
-  let final_state = create_state ~final:true () in
-  add_transition penultimate_state End_of_input final_state;
+  let penultimate_state =
+    (* This is the last state before requiring an end-of-input
+       pseudocharacter in full mode. In prefix mode, we don't require
+       reaching the end of the input so we mark this state as accepting
+       (final). *)
+    match mode with
+    | Full ->
+        let penultimate_state = create_state () in
+        let final_state = create_state ~final:true () in
+        add_transition penultimate_state End_of_input final_state;
+        penultimate_state
+    | Prefix ->
+        create_state ~final:true ()
+  in
   translate_regexp initial_state re penultimate_state;
   let state_array =
     Hashtbl.fold (fun _id state acc -> state :: acc) all_states []
