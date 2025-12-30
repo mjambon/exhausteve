@@ -108,13 +108,14 @@ Here is an example of nonmatching input:
 `exhausteve` dumps the files `nfa.dot` and `dfa.dot` that when fed to
 `dot` give us a visual representation of the automata.
 I find them interesting in the case of `. | (..)* |
-(...)*`. Here's the NFA:
+(...)*`. Here's the NFA and the DFA derived from it:
 
-<img src="img/demo-nfa.png" title="NFA" style="width:80%">
-
-And here's the DFA derived from the NFA:
-
-<img src="img/demo-dfa.png" title="DFA" style="width:60%">
+<p float="left">
+  <img src="img/demo-nfa.png" title="NFA"
+       style="width:60%; vertical-align:top">
+  <img src="img/demo-dfa.png" title="DFA"
+       style="width:30%; vertical-align:top">
+</p>
 
 Note the two nodes (states) without an `eof` transition leading to the final
 state, indicating that any string ending on one of these states will be
@@ -125,6 +126,8 @@ state shown in double circles.
 Here are the NFA and DFA for the same example in prefix mode:
 
 <p float="left">
-  <img src="img/demo-nfa-prefix.png" title="NFA" style="width:80%">
-  <img src="img/demo-dfa-prefix.png" title="DFA" style="width:15%">
+  <img src="img/demo-nfa-prefix.png" title="NFA"
+       style="width:60%; vertical-align:top">
+  <img src="img/demo-dfa-prefix.png" title="DFA"
+       style="width:30%; vertical-align:top">
 </p>
