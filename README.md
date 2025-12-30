@@ -110,12 +110,19 @@ Here is an example of nonmatching input:
 I find them interesting in the case of `. | (..)* |
 (...)*`. Here's the NFA:
 
-![NFA](img/demo-nfa.png "NFA")
+<img src="img/demo-nfa.png" title="NFA" style="width:80%">
 
 And here's the DFA derived from the NFA:
 
-![DFA](img/demo-dfa.png "DFA")
+<img src="img/demo-dfa.png" title="DFA" style="width:60%">
 
 Note the two nodes (states) without an `eof` transition leading to the final
 state, indicating that any string ending on one of these states will be
 rejected by the automaton.
+
+In prefix mode, we get more than one accepting (or final)
+state shown in double circles.
+Here are the NFA and DFA for the same example in prefix mode:
+
+<img src="img/demo-nfa-prefix.png" title="NFA" style="width:50%">
+<img src="img/demo-dfa-prefix.png" title="DFA" style="width:15%">
