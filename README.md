@@ -131,3 +131,14 @@ Here are the NFA and DFA for the same example in prefix mode:
   <img src="img/demo-dfa-prefix.png" title="DFA"
        style="width:30%; vertical-align:top">
 </p>
+
+<table>
+  <tr>
+    <td valign="top">
+      <img src="img/demo-nfa-prefix.png" width="300">
+    </td>
+    <td valign="top">
+      <img src="img/demo-dfa-prefix.png" width="300">
+    </td>
+  </tr>
+</table>
