@@ -134,11 +134,11 @@ Here are the NFA and DFA for the same example in prefix mode:
 
 <table>
   <tr>
-    <td valign="top">
-      <img src="img/demo-nfa-prefix.png" width="60%">
+    <td valign="top" width="65%">
+      <img src="img/demo-nfa-prefix.png">
     </td>
-    <td valign="top">
-      <img src="img/demo-dfa-prefix.png" width="30%">
+    <td valign="top" width="35%">
+      <img src="img/demo-dfa-prefix.png">
     </td>
   </tr>
 </table>
