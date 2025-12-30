@@ -110,12 +110,16 @@ Here is an example of nonmatching input:
 I find them interesting in the case of `. | (..)* |
 (...)*`. Here's the NFA and the DFA derived from it:
 
-<p>
-  <img src="img/demo-nfa.png" title="NFA"
-       style="width:60%; vertical-align:top">
-  <img src="img/demo-dfa.png" title="DFA"
-       style="width:30%; vertical-align:top">
-</p>
+<table>
+  <tr>
+    <td valign="top" width="65%">
+      <img src="img/demo-nfa.png">
+    </td>
+    <td valign="top" width="35%">
+      <img src="img/demo-dfa.png">
+    </td>
+  </tr>
+</table>
 
 Note the two nodes (states) without an `eof` transition leading to the final
 state, indicating that any string ending on one of these states will be
@@ -124,13 +128,6 @@ rejected by the automaton.
 In prefix mode, we get more than one accepting (or final)
 state shown in double circles.
 Here are the NFA and DFA for the same example in prefix mode:
-
-<p>
-  <img src="img/demo-nfa-prefix.png" title="NFA"
-       style="width:60%; vertical-align:top">
-  <img src="img/demo-dfa-prefix.png" title="DFA"
-       style="width:30%; vertical-align:top">
-</p>
 
 <table>
   <tr>
