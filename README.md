@@ -124,5 +124,7 @@ In prefix mode, we get more than one accepting (or final)
 state shown in double circles.
 Here are the NFA and DFA for the same example in prefix mode:
 
-<img src="img/demo-nfa-prefix.png" title="NFA" style="width:50%">
-<img src="img/demo-dfa-prefix.png" title="DFA" style="width:15%">
+<p float="left">
+  <img src="img/demo-nfa-prefix.png" title="NFA" style="width:80%">
+  <img src="img/demo-dfa-prefix.png" title="DFA" style="width:15%">
+</p>
