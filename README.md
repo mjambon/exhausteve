@@ -112,10 +112,10 @@ I find them interesting in the case of `. | (..)* |
 
 <table>
   <tr>
-    <td valign="top" width="65%">
+    <td valign="top" width="55%">
       <img src="img/demo-nfa.png">
     </td>
-    <td valign="top" width="35%">
+    <td valign="top" width="45%">
       <img src="img/demo-dfa.png">
     </td>
   </tr>
