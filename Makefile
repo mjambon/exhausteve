@@ -34,3 +34,8 @@ graphs:
 	dot -Tpng dfa.dot -o dfa.png
 	xdg-open nfa.png &
 	xdg-open dfa.png &
+
+# For ocamllex experiments
+.PHONY: export
+export:
+	./pack

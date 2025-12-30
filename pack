@@ -1,0 +1,71 @@
+#! /usr/bin/env bash
+#
+# Pack the source modules into one mli and one ml for easy vendoring into
+# ocamllex
+#
+set -eu
+
+modules="
+  Conf
+  Char_class
+  Char_partition
+  Regexp
+  NFA
+  DFA
+  Check
+"
+
+# Print a file with an indentation of two spaces on each nonempty line
+indent() {
+  sed 's/^\(.\)/  \1/' "$1"
+}
+
+mkdir -p export
+
+(
+  cat <<EOF
+(*
+   This is source code from multiple files packed into one, taken from
+   https://github.com/mjambon/exhausteve/tree/main/lib
+   Git commit: $(git rev-parse HEAD)
+*)
+
+[@@@warning "-not-principal"]
+
+EOF
+
+  (
+    cd lib
+    for module in $modules; do
+      if [[ -e "$module.mli" ]]; then
+        cat <<EOF
+module $module : sig
+$(indent "$module".mli)
+end
+= struct
+$(indent "$module".ml)
+end
+
+EOF
+      else
+        cat <<EOF
+module $module = struct
+$(indent "$module".ml)
+end
+
+EOF
+      fi
+    done
+  )
+) > export/exhausteve.ml
+
+(
+  cd export
+  cat > exhausteve.mli <<EOF
+(* Supermodule interface file generated with 'ocamlc -i'
+
+   The ml file contains documented interfaces for each submodule.
+*)
+EOF
+  ocamlc -i exhausteve.ml >> exhausteve.mli
+)

@@ -18,6 +18,7 @@ type t
 
 (** Return the elements of the character class in order *)
 val elements : t -> char list
+val of_list : char list -> t
 
 (** Return one element *)
 val choose_opt : t -> char option

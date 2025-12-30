@@ -28,13 +28,13 @@ val show_state_id : state_id -> string
     different states.
 *)
 type state = {
-  (** Unique state/node identifier *)
   id: state_id;
-  (** Whether this state is accepting/final *)
+    (** Unique state/node identifier *)
   final: bool;
-  (** A transition links to one or more states. Use [Hashtbl.find_all]
-      to access them. *)
+    (** Whether this state is accepting/final *)
   transitions: (transition, state) Hashtbl.t;
+    (** A transition links to one or more states. Use [Hashtbl.find_all]
+        to access them. *)
 }
 
 (** The automaton defined over symbols that are groupings of equivalent

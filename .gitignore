@@ -10,3 +10,6 @@ nfa.dot
 nfa.png
 dfa.dot
 dfa.png
+
+# created by 'make export'
+/export/

@@ -34,6 +34,7 @@ let digit = range '0' '9'
 
 let mem = CC.mem
 let elements = CC.elements
+let of_list = CC.of_list
 let choose_opt = CC.choose_opt
 let fold = CC.fold
 let iter = CC.iter
