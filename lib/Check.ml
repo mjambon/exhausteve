@@ -119,6 +119,10 @@ let string_of_list str = str |> List.to_seq |> String.of_seq
    Shortest match algorithm: follow the transitions until reaching a final
    state (success) or until reaching a missing transition (failure).
    An extra eof symbol is assumed at the end of the input string.
+
+   Note that a real-world implementation would probably track and
+   return the position in the input string rather than accumulating
+   the path as a stack of characters.
 *)
 let shortest_match (dfa : DFA.t) str =
   let rec find path (state : DFA.state) chars =
@@ -152,8 +156,8 @@ let matches dfa str =
 
 (*
    Longest match algorithm: same as the shortest match algorithm but
-   continue past final states, remembering the last final state encountered.
-   When reaching a dead end, return the last final state.
+   continue past final states, remembering the path at the last final
+   state encountered. When reaching a dead end, return the remembered path.
 *)
 let longest_match (dfa : DFA.t) str =
   let rec find last_final_path path (state : DFA.state) chars =
