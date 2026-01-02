@@ -112,25 +112,73 @@ let is_exhaustive (dfa : DFA.t) =
   with Found_string example ->
     Error example
 
-let matches (dfa : DFA.t) str =
-  let rec matches (state : DFA.state) chars =
+let list_of_string str = str |> String.to_seq |> List.of_seq
+let string_of_list str = str |> List.to_seq |> String.of_seq
+
+(*
+   Shortest match algorithm: follow the transitions until reaching a final
+   state (success) or until reaching a missing transition (failure).
+   An extra eof symbol is assumed at the end of the input string.
+*)
+let shortest_match (dfa : DFA.t) str =
+  let rec find path (state : DFA.state) chars =
     if state.final then
-      true
+      Some path
     else
       match chars with
       | [] ->
           (match Hashtbl.find_opt state.transitions End_of_input with
-           | Some state -> state.final
-           | None -> false)
+           | Some dst_state ->
+               if dst_state.final then
+                 Some path
+               else
+                 None
+           | None -> None)
       | char :: chars ->
           let symbol = Char_partition.assoc dfa.char_partition char in
           match Hashtbl.find_opt state.transitions (Input symbol) with
-          | Some state -> matches state chars
-          | None -> false
+          | Some state -> find (char :: path) state chars
+          | None -> None
   in
-  let chars =
-    str
-    |> String.to_seq
-    |> List.of_seq
+  let chars = list_of_string str in
+  match find [] dfa.initial_state chars with
+  | None -> None
+  | Some path -> Some (string_of_list (List.rev path))
+
+let matches dfa str =
+  match shortest_match dfa str with
+  | None -> false
+  | Some _ -> true
+
+(*
+   Longest match algorithm: same as the shortest match algorithm but
+   continue past final states, remembering the last final state encountered.
+   When reaching a dead end, return the last final state.
+*)
+let longest_match (dfa : DFA.t) str =
+  let rec find last_final_path path (state : DFA.state) chars =
+    let last_final_path =
+      if state.final then
+        Some path
+      else
+        last_final_path
+    in
+    match chars with
+    | [] ->
+        (match Hashtbl.find_opt state.transitions End_of_input with
+         | Some dst_state ->
+             if dst_state.final then
+               Some path
+             else
+               last_final_path
+         | None -> last_final_path)
+    | char :: chars ->
+        let symbol = Char_partition.assoc dfa.char_partition char in
+        match Hashtbl.find_opt state.transitions (Input symbol) with
+        | Some state -> find last_final_path (char :: path) state chars
+        | None -> last_final_path
   in
-  matches dfa.initial_state chars
+  let chars = list_of_string str in
+  match find None [] dfa.initial_state chars with
+  | None -> None
+  | Some path -> Some (string_of_list (List.rev path))

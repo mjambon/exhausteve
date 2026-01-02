@@ -12,3 +12,11 @@ val is_exhaustive : DFA.t -> (unit, string) Result.t
 (** Test whether a string matches a regexp. This isn't very efficient,
     it's for testing purposes. *)
 val matches : DFA.t -> string -> bool
+
+(** Find the shortest match. Relevant in prefix mode.
+    This is for testing and for pedagogical purposes. *)
+val shortest_match : DFA.t -> string -> string option
+
+(** Find the longest match. Relevant in prefix mode.
+    This is for testing and for pedagogical purposes. *)
+val longest_match : DFA.t -> string -> string option

@@ -32,6 +32,39 @@ let test_match mode ?name regexp_str input matches =
 let test_match_full = test_match Full
 let test_match_prefix = test_match Prefix
 
+type matcher_kind =
+  | Shortest_match
+  | Longest_match
+
+let show_matcher = function
+  | Shortest_match -> "shortest match"
+  | Longest_match -> "longest match"
+
+let get_matcher = function
+  | Shortest_match -> Check.shortest_match
+  | Longest_match -> Check.longest_match
+
+let test_prefix_match matcher_kind ?name regexp_str input expected_result =
+  let name, cat =
+    match name with
+    | None -> sprintf "%S" input, []
+    | Some name -> name, [sprintf "%S" input]
+  in
+  Testo.create
+    name
+    ~category:(["match"; "prefix"; show_matcher matcher_kind; regexp_str] @ cat)
+    (fun () ->
+       printf "regexp: %s\n" regexp_str;
+       printf "input: %s\n" input;
+       let re = Regexp_parser.of_string_exn regexp_str in
+       let dfa = Check.compile Conf.Prefix re in
+       let res = (get_matcher matcher_kind) dfa input in
+       Alcotest.(check (option string)) "" expected_result res
+    )
+
+let test_shortest_match = test_prefix_match Shortest_match
+let test_longest_match = test_prefix_match Longest_match
+
 (* Test regexp exhaustiveness *)
 let test_exhaustiveness mode ?name regexp_str expected_result =
   let name, cat =
@@ -140,6 +173,11 @@ let tests _env = [
   test_match_prefix "[^]" "b" true;
   test_match_prefix "." "a" true;
   test_match_prefix "." "b" true;
+
+  test_shortest_match "a*" "aab" (Some "");
+  test_longest_match "a*" "aab" (Some "aa");
+  test_shortest_match "a*b" "aab" (Some "aab");
+  test_longest_match "a*b" "aab" (Some "aab");
 
   test_exhaustiveness_full ".*" (Ok ());
   test_exhaustiveness_full "([a-z] | [^a-z])*" (Ok ());
